@@ -133,6 +133,7 @@ export default function Home() {
   const handleCreateRecipeClick = async () => {
     setLoading(true);
     setOpen(true);
+    setCurrentRecipe(null); // Reset current recipe before generating a new one
     const pantryContents = savePantryContents();
     const descriptions = pantryContents.map(item => `${item.name}: ${item.count}`).join(', ');
 
