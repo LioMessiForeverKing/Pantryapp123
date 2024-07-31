@@ -1,6 +1,6 @@
 'use client';
 import { useSession } from 'next-auth/react';
-import { Box, Typography, Button, Stack, CircularProgress, Backdrop, Modal } from '@mui/material';
+import { Box, Typography, Button, Stack, CircularProgress, Backdrop, Modal, Select, MenuItem } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import HeaderBox from './HeaderBox'; // Adjust the path as needed
@@ -22,6 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
+  const [selectedNationality, setSelectedNationality] = useState('');
 
   useEffect(() => {
     if (session) {
@@ -136,7 +137,7 @@ export default function Home() {
     const descriptions = pantryContents.map(item => `${item.name}: ${item.count}`).join(', ');
 
     try {
-      const recipe = await _generateRecipe(descriptions);
+      const recipe = await _generateRecipe(descriptions, selectedNationality);
       setCurrentRecipe(recipe);
       setRecipes(prevRecipes => [...prevRecipes, recipe]); // Save the recipe to the list
     } catch (error) {
@@ -147,7 +148,7 @@ export default function Home() {
     }
   };
 
-  const _generateRecipe = async (descriptions) => {
+  const _generateRecipe = async (descriptions, nationality) => {
     const url = process.env.NEXT_PUBLIC_GEMINI_API_URL;
     const requestPayload = {
       contents: [
@@ -157,7 +158,7 @@ export default function Home() {
             { text: descriptions },
             {
               text:
-                'output: Write a recipe based on these pantry descriptions. The recipe should include ingredients and step-by-step instructions. '
+                `output: Write a recipe based on these pantry descriptions, with a ${nationality} twist. The recipe should include ingredients and step-by-step instructions. `
             }
           ]
         }
@@ -244,6 +245,24 @@ export default function Home() {
           >
             Create Recipe
           </Button>
+          <Box sx={{ margin: 2 }}>
+            <Typography variant="h6" color="black">Select Nationality</Typography>
+            <Select
+              value={selectedNationality}
+              onChange={(e) => setSelectedNationality(e.target.value)}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Select Nationality' }}
+              sx={{ minWidth: 200 }}
+            >
+              <MenuItem value="" disabled>Select Nationality</MenuItem>
+              <MenuItem value="srilankan">Sri Lankan</MenuItem>
+              <MenuItem value="indian">Indian</MenuItem>
+              <MenuItem value="french">French</MenuItem>
+              <MenuItem value="italian">Italian</MenuItem>
+              <MenuItem value="mexican">Mexican</MenuItem>
+              {/* Add more nationalities as needed */}
+            </Select>
+          </Box>
           <Box
             sx={{
               flexGrow: 1,
@@ -307,7 +326,7 @@ export default function Home() {
             borderLeft: '1px solid grey'
           }}
         >
-          <Typography variant="h5" mb={2}>Saved Recipes</Typography>
+          <Typography variant="h5" mb={2} color="black">Saved Recipes</Typography>
           {recipes.map((recipe, index) => (
             <Box
               key={index}
